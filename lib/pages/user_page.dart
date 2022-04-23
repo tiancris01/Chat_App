@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'package:offertorio/services/auth_service.dart';
 
 import 'package:offertorio/models/usuarios.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -12,31 +15,37 @@ class _userPageState extends State<userPage> {
   RefreshController _refreshCtrl = RefreshController(initialRefresh: false);
 
   final users = [
-    usuarios(
+    Usuario(
         uid: '1',
-        name: 'Daniel',
-        email: 'tiancris@gmail.com',
-        onlineStatus: true),
-    usuarios(
-        uid: '2',
-        name: 'Karen',
-        email: 'tiancris@gmail.com',
-        onlineStatus: false),
-    usuarios(
-        uid: '3',
-        name: 'Cristian',
-        email: 'tiancris@gmail.com',
-        onlineStatus: true),
+        nombre: 'Daniel',
+        //contras: '123456,',
+        email: 'test1@gmail.com',
+        online: true),
+    Usuario(
+        uid: '1',
+        nombre: 'Karen',
+        //contrasea: '123456,',
+        email: 'test2@gmail.com',
+        online: true),
+    Usuario(
+        uid: '1',
+        nombre: 'Daniel',
+        //contrasea: '123456,',
+        email: 'test3@gmail.com',
+        online: true),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final authservice = Provider.of<authService>(context);
+    final usuario = authservice.usuario;
+
     return Scaffold(
         appBar: AppBar(
           elevation: 1,
           backgroundColor: Colors.grey[100],
           title: Text(
-            'Mi nombre',
+            usuario.nombre,
             style: TextStyle(color: Colors.black54),
           ),
           centerTitle: true,
@@ -45,7 +54,10 @@ class _userPageState extends State<userPage> {
               Icons.arrow_back,
               color: Colors.black54,
             ),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, 'login');
+              authService.deletToken();
+            },
           ),
           actions: [
             Container(
@@ -73,12 +85,12 @@ class _userPageState extends State<userPage> {
     );
   }
 
-  ListTile _userListTile(usuarios u) {
+  ListTile _userListTile(Usuario u) {
     return ListTile(
-      title: Text(u.name),
+      title: Text(u.nombre),
       leading: CircleAvatar(
         child: Text(
-          u.name.substring(0, 2),
+          u.nombre.substring(0, 2),
         ),
       ),
       trailing: Container(
@@ -86,7 +98,7 @@ class _userPageState extends State<userPage> {
         height: 10,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(100),
-          color: u.onlineStatus ? Colors.green : Colors.red,
+          color: u.online ? Colors.green : Colors.red,
         ),
       ),
     );

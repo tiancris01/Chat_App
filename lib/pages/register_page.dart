@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:offertorio/helpers/mostrar_alerta.dart';
+import 'package:provider/provider.dart';
+
+import 'package:offertorio/services/auth_service.dart';
 
 import 'package:offertorio/widgets/btn_login.dart';
 import 'package:offertorio/widgets/coustom_input.dart';
@@ -55,6 +59,8 @@ class __formLoginState extends State<_formLogin> {
 
   @override
   Widget build(BuildContext context) {
+    final authservice = Provider.of<authService>(context);
+
     return Container(
       margin: EdgeInsets.only(top: 40),
       padding: EdgeInsets.symmetric(horizontal: 50),
@@ -80,9 +86,24 @@ class __formLoginState extends State<_formLogin> {
             isPassword: true,
           ),
           BotonLogin(
-            btnText: 'Creat',
-            onPress: null,
-          ),
+              btnText: 'Creat',
+              onPress: authservice.autenticando
+                  ? null
+                  : () async {
+                      print(nameCtrl.text);
+                      print(emailCtrl.text);
+                      print(passCtrl.text);
+                      final registroOk = await authservice.register(
+                          nameCtrl.text.trim(),
+                          emailCtrl.text.trim(),
+                          passCtrl.text.trim());
+                      if (registroOk == true) {
+                        Navigator.pushReplacementNamed(context, 'users');
+                      } else {
+                        mostrarAlerta(
+                            context, 'Registro incorrecto', registroOk);
+                      }
+                    }),
         ],
       ),
     );
