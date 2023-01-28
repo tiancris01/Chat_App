@@ -2,7 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:offertorio/services/auth_service.dart';
+import 'package:offertorio/services/chat_service.dart';
+import 'package:offertorio/services/socket_service.dart';
 import 'package:offertorio/widgets/chat_messege.dart';
+import 'package:provider/provider.dart';
 
 class chatPage extends StatefulWidget {
   @override
@@ -13,12 +17,26 @@ class _chatPageState extends State<chatPage> with TickerProviderStateMixin {
   final TextEditingController _textCtrl = TextEditingController();
   final FocusNode _focusNode = FocusNode();
 
-  bool _escribiendo = false;
+  late ChatService chatService;
+  late SocketService socketService;
+  late AuthService authService;
 
   List<chatMessege> _messages = [];
 
+  bool _escribiendo = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    this.chatService = Provider.of<ChatService>(context, listen: false);
+    this.socketService = Provider.of<SocketService>(context, listen: false);
+    this.authService = Provider.of<AuthService>(context, listen: false);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final userTo = this.chatService.userTo;
     return Scaffold(
       appBar: AppBar(
         elevation: 1,
@@ -28,7 +46,7 @@ class _chatPageState extends State<chatPage> with TickerProviderStateMixin {
           children: [
             CircleAvatar(
               child: Text(
-                'TE',
+                userTo.nombre.substring(0, 2),
                 style: TextStyle(
                     color: Colors.black87,
                     fontSize: 16,
@@ -41,7 +59,7 @@ class _chatPageState extends State<chatPage> with TickerProviderStateMixin {
               height: 3,
             ),
             Text(
-              'Daniel Osorio',
+              userTo.nombre,
               style: TextStyle(color: Colors.black54, fontSize: 15),
             )
           ],
@@ -100,7 +118,10 @@ class _chatPageState extends State<chatPage> with TickerProviderStateMixin {
             Container(
               margin: EdgeInsets.symmetric(horizontal: 4.0),
               child: Platform.isIOS
-                  ? CupertinoButton(child: Text('Enviar'), onPressed: () {})
+                  ? CupertinoButton(
+                      child: Text('Enviar'),
+                      onPressed: () {},
+                    )
                   : Container(
                       margin: EdgeInsets.symmetric(horizontal: 4.0),
                       child: IconTheme(
@@ -112,7 +133,8 @@ class _chatPageState extends State<chatPage> with TickerProviderStateMixin {
                             onPressed: _escribiendo
                                 ? () => _handleSubmit(_textCtrl.text.trim())
                                 : null),
-                      )),
+                      ),
+                    ),
             )
           ],
         ),
@@ -121,7 +143,6 @@ class _chatPageState extends State<chatPage> with TickerProviderStateMixin {
   }
 
   _handleSubmit(String texto) {
-    print(texto);
     _focusNode.requestFocus();
     _textCtrl.clear();
 
@@ -136,6 +157,12 @@ class _chatPageState extends State<chatPage> with TickerProviderStateMixin {
 
     setState(() {
       _escribiendo = false;
+    });
+
+    this.socketService.emit('msg_private', {
+      'de': this.authService.usuario.uid,
+      'to': this.chatService.userTo.uid,
+      'msg': texto,
     });
   }
 

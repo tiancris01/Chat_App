@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:offertorio/services/socket_service.dart';
 import 'package:provider/provider.dart';
 
 import 'package:offertorio/services/auth_service.dart';
@@ -26,7 +27,7 @@ class loginPage extends StatelessWidget {
                 Logo(
                   titulo: 'Offertorio',
                 ),
-                _formLogin(),
+                _FormLogin(),
                 Labels(
                   ruta: 'registro',
                   tituloLbl: 'Crear cuenta',
@@ -46,20 +47,22 @@ class loginPage extends StatelessWidget {
   }
 }
 
-class _formLogin extends StatefulWidget {
-  const _formLogin({Key? key}) : super(key: key);
+class _FormLogin extends StatefulWidget {
+  const _FormLogin({Key? key}) : super(key: key);
 
   @override
-  State<_formLogin> createState() => __formLoginState();
+  State<_FormLogin> createState() => _FormLoginState();
 }
 
-class __formLoginState extends State<_formLogin> {
+class _FormLoginState extends State<_FormLogin> {
   final emailCtrl = TextEditingController();
   final passCtrl = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    final authservice = Provider.of<authService>(context);
+    final authservice = Provider.of<AuthService>(context);
+    final socketService = Provider.of<SocketService>(context);
+
     return Container(
       margin: EdgeInsets.only(top: 40),
       padding: EdgeInsets.symmetric(horizontal: 50),
@@ -88,6 +91,7 @@ class __formLoginState extends State<_formLogin> {
                         emailCtrl.text.trim(), passCtrl.text.trim());
 
                     if (loginOk) {
+                      socketService.connect();
                       Navigator.pushReplacementNamed(context, 'users');
                     } else {
                       mostrarAlerta(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:offertorio/helpers/mostrar_alerta.dart';
 import 'package:provider/provider.dart';
 
+import 'package:offertorio/services/socket_service.dart';
 import 'package:offertorio/services/auth_service.dart';
 
 import 'package:offertorio/widgets/btn_login.dart';
@@ -59,7 +60,8 @@ class __formLoginState extends State<_formLogin> {
 
   @override
   Widget build(BuildContext context) {
-    final authservice = Provider.of<authService>(context);
+    final authservice = Provider.of<AuthService>(context);
+    final socketService = Provider.of<SocketService>(context);
 
     return Container(
       margin: EdgeInsets.only(top: 40),
@@ -98,6 +100,7 @@ class __formLoginState extends State<_formLogin> {
                           emailCtrl.text.trim(),
                           passCtrl.text.trim());
                       if (registroOk == true) {
+                        socketService.connect();
                         Navigator.pushReplacementNamed(context, 'users');
                       } else {
                         mostrarAlerta(
