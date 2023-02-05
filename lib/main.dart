@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:offertorio/services/chat_service.dart';
+import 'services/chat_service.dart';
 import 'package:provider/provider.dart';
 
-import 'package:offertorio/services/socket_service.dart';
-import 'package:offertorio/services/auth_service.dart';
+import 'services/socket_service.dart';
+import 'services/auth_service.dart';
 
-import 'package:offertorio/routes/routes.dart';
+import 'routes/routes.dart';
 
 void main() => runApp(MyApp());
 

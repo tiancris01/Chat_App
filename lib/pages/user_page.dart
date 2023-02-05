@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:offertorio/services/chat_service.dart';
-import 'package:offertorio/services/usuario_service.dart';
 import 'package:provider/provider.dart';
-
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
-import 'package:offertorio/services/socket_service.dart';
-import 'package:offertorio/services/auth_service.dart';
-
-import 'package:offertorio/models/usuarios.dart';
+import '../models/usuarios.dart';
+import '../services/auth_service.dart';
+import '../services/chat_service.dart';
+import '../services/socket_service.dart';
+import '../services/usuario_service.dart';
 
 class userPage extends StatefulWidget {
   @override

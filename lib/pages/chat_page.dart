@@ -2,10 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:offertorio/services/auth_service.dart';
-import 'package:offertorio/services/chat_service.dart';
-import 'package:offertorio/services/socket_service.dart';
-import 'package:offertorio/widgets/chat_messege.dart';
+import 'package:offertorio/models/mensajes_response.dart';
+import '../services/auth_service.dart';
+import '../services/chat_service.dart';
+import '../services/socket_service.dart';
+import '../widgets/chat_messege.dart';
 import 'package:provider/provider.dart';
 
 class chatPage extends StatefulWidget {
@@ -21,7 +22,7 @@ class _chatPageState extends State<chatPage> with TickerProviderStateMixin {
   late SocketService socketService;
   late AuthService authService;
 
-  List<chatMessege> _messages = [];
+  List<ChatMessege> _messages = [];
 
   bool _escribiendo = false;
 
@@ -32,6 +33,40 @@ class _chatPageState extends State<chatPage> with TickerProviderStateMixin {
     this.chatService = Provider.of<ChatService>(context, listen: false);
     this.socketService = Provider.of<SocketService>(context, listen: false);
     this.authService = Provider.of<AuthService>(context, listen: false);
+
+    this.socketService.socket.on('msg_private', _listeningMsg);
+
+    _msgHistory(this.chatService.userTo.uid);
+  }
+
+  void _msgHistory(String uid) async {
+    List<Msg> chat = await this.chatService.getMsg(uid);
+    final chatHistory = chat.map((m) => ChatMessege(
+          texto: m.msg,
+          uid: m.from,
+          animationController: AnimationController(
+              vsync: this, duration: Duration(milliseconds: 0))
+            ..forward(),
+        ));
+    setState(() {
+      _messages.insertAll(0, chatHistory);
+    });
+  }
+
+  void _listeningMsg(dynamic payload) {
+    ChatMessege messege = ChatMessege(
+      texto: payload['msg'],
+      uid: payload['from'],
+      animationController: AnimationController(
+        vsync: this,
+        duration: Duration(milliseconds: 300),
+      ),
+    );
+    setState(() {
+      _messages.insert(0, messege);
+    });
+
+    messege.animationController.forward();
   }
 
   @override
@@ -146,9 +181,9 @@ class _chatPageState extends State<chatPage> with TickerProviderStateMixin {
     _focusNode.requestFocus();
     _textCtrl.clear();
 
-    final newMessage = new chatMessege(
+    final newMessage = new ChatMessege(
       texto: texto,
-      uid: '123',
+      uid: authService.usuario.uid,
       animationController: AnimationController(
           vsync: this, duration: Duration(milliseconds: 500)),
     );
@@ -160,7 +195,7 @@ class _chatPageState extends State<chatPage> with TickerProviderStateMixin {
     });
 
     this.socketService.emit('msg_private', {
-      'de': this.authService.usuario.uid,
+      'from': this.authService.usuario.uid,
       'to': this.chatService.userTo.uid,
       'msg': texto,
     });
@@ -168,10 +203,10 @@ class _chatPageState extends State<chatPage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    // TODO: off del socket
-    for (chatMessege messege in _messages) {
+    for (ChatMessege messege in _messages) {
       messege.animationController.dispose();
     }
+    this.socketService.socket.off("msg_private");
     super.dispose();
   }
 }
